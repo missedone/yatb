@@ -1,0 +1,8 @@
+build
+test-output
+target/
+.DS_Store
+
+.settings/
+.classpath
+.project

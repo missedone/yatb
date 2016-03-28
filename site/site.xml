@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/com.github.eclipse.yatb.features_1.0.0.qualifier.jar" id="com.github.eclipse.yatb.features" version="1.0.0.qualifier">
+      <category name="yatb"/>
+   </feature>
+   <category-def name="yatb" label="Yet another Terminate Button">
+      <description>
+          Yet another Terminate Button (YaTB) for Eclipse
+      </description>
+   </category-def>
+</site>

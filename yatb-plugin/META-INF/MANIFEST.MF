@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Localization: plugin
+Bundle-Name: %bundle.name
+Bundle-SymbolicName: com.github.eclipse.yatb;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: com.github.eclipse.yatb.Activator
+Bundle-Vendor: %bundler.provider
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.eclipse.core.variables,
+ org.eclipse.ui.console,
+ org.eclipse.debug.core,
+ org.eclipse.debug.ui
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7

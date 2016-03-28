@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="com.github.eclipse.yatb.features"
+      label="%feature.name"
+      version="1.0.0.qualifier"
+      provider-name="%feature.provider">
+
+   <description url="https://github.com/missedone/yatb">
+      [Enter Feature Description here.]
+   </description>
+
+   <copyright url="https://github.com/missedone/yatb/license.txt">
+      EPL 1.0
+   </copyright>
+
+   <license url="https://github.com/missedone/yatb">
+      EPL 1.0
+   </license>
+
+   <plugin
+         id="com.github.eclipse.yatb"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>
