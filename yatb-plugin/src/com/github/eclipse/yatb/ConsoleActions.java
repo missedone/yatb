@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.DebugException;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.RuntimeProcess;
@@ -23,105 +24,123 @@ import org.eclipse.ui.part.IPageSite;
 
 public class ConsoleActions implements IConsolePageParticipant {
 
-  private IPageBookViewPage page;
-  private Action stop;
-  private IActionBars bars;
-  private IConsole console;
+	private IPageBookViewPage page;
+	private Action terminateAction;
+	private Action terminateAllAction;
+	private IActionBars bars;
+	private IConsole console;
 
-  @Override
-  public void init(final IPageBookViewPage page, final IConsole console) {
-    this.console = console;
-    this.page = page;
-    IPageSite site = page.getSite();
-    this.bars = site.getActionBars();
+	@Override
+	public void init(final IPageBookViewPage page, final IConsole console) {
+		this.console = console;
+		this.page = page;
+		IPageSite site = page.getSite();
+		this.bars = site.getActionBars();
 
-    createTerminateAllButton();
+		terminateAction = createTerminateButton();
+		terminateAllAction = createTerminateAllButton();
 
-    bars.getMenuManager().add(new Separator());
+		bars.getMenuManager().add(new Separator());
 
-    IToolBarManager toolbarManager = bars.getToolBarManager();
+		IToolBarManager toolbarManager = bars.getToolBarManager();
 
-    toolbarManager.appendToGroup(IConsoleConstants.LAUNCH_GROUP, stop);
+		toolbarManager.appendToGroup(IConsoleConstants.LAUNCH_GROUP, terminateAction);
 
-    bars.updateActionBars();
-  }
+		bars.updateActionBars();
+	}
 
-  private void createTerminateAllButton() {
-    ImageDescriptor imageDescriptor = ImageDescriptor.createFromFile(getClass(), "/icons/terminate_rem_co.gif");
-    this.stop = new Action("Kill Process", imageDescriptor) {
-      public void run() {
-        if (console instanceof ProcessConsole) {
-          RuntimeProcess runtimeProcess = (RuntimeProcess) ((ProcessConsole) console)
-              .getAttribute(IDebugUIConstants.ATTR_CONSOLE_PROCESS);
-          ILaunch launch = runtimeProcess.getLaunch();
-          stopProcess(launch);
-        }
-      }
-    };
-  }
+	private Action createTerminateButton() {
+		ImageDescriptor imageDescriptor = ImageDescriptor.createFromFile(getClass(), "/icons/terminate_rem_co.gif");
+		return new Action("Kill Process", imageDescriptor) {
+			@Override
+			public void run() {
+				if (console instanceof ProcessConsole) {
+					RuntimeProcess runtimeProcess = (RuntimeProcess) ((ProcessConsole) console)
+							.getAttribute(IDebugUIConstants.ATTR_CONSOLE_PROCESS);
+					ILaunch launch = runtimeProcess.getLaunch();
+					stopProcess(launch);
+				}
+			}
+		};
+	}
 
-  private void stopProcess(ILaunch launch) {
-    if (launch != null && !launch.isTerminated()) {
-      try {
-        if (Platform.OS_WIN32.equals(Platform.getOS())) {
-          launch.terminate();
-        } else {
-          for (IProcess p : launch.getProcesses()) {
-            try {
-              Method m = p.getClass().getDeclaredMethod("getSystemProcess");
-              m.setAccessible(true);
-              Process proc = (Process) m.invoke(p);
+	private Action createTerminateAllButton() {
+		ImageDescriptor imageDescriptor = ImageDescriptor.createFromFile(getClass(), "/icons/terminate_rem_co.gif");
+		return new Action("Kill All Processes", imageDescriptor) {
+			@Override
+			public void run() {
+				ILaunch[] launches = DebugPlugin.getDefault().getLaunchManager().getLaunches();
+				for (ILaunch launch : launches) {
+					stopProcess(launch);
+				}
+			}
+		};
+	}
 
-              Field f = proc.getClass().getDeclaredField("pid");
-              f.setAccessible(true);
-              int pid = (int) f.get(proc);
+	private void stopProcess(ILaunch launch) {
+		if (launch != null && !launch.isTerminated()) {
+			try {
+				if (Platform.OS_WIN32.equals(Platform.getOS())) {
+					launch.terminate();
+				} else {
+					for (IProcess p : launch.getProcesses()) {
+						try {
+							Method m = p.getClass().getDeclaredMethod("getSystemProcess");
+							m.setAccessible(true);
+							Process proc = (Process) m.invoke(p);
 
-              // force kill the process on OSX and Linux-like platform
-              // since on Linux the default behaviour of Process.destroy() is to
-              // gracefully shutdown
-              // which rarely can stop the busy process
-              Runtime rt = Runtime.getRuntime();
-              rt.exec("kill -9 " + pid);
-            } catch (Exception ex) {
-              Activator.log(ex);
-            }
-          }
-        }
-      } catch (DebugException e) {
-        Activator.log(e);
-      }
-    }
-  }
+							Field f = proc.getClass().getDeclaredField("pid");
+							f.setAccessible(true);
+							int pid = (int) f.get(proc);
 
-  @Override
-  public void dispose() {
-    stop = null;
-    bars = null;
-    page = null;
-  }
+							// force kill the process on OSX and Linux-like
+							// platform
+							// since on Linux the default behaviour of
+							// Process.destroy() is to
+							// gracefully shutdown
+							// which rarely can stop the busy process
+							Runtime rt = Runtime.getRuntime();
+							rt.exec("kill -9 " + pid);
+						} catch (Exception ex) {
+							Activator.log(ex);
+						}
+					}
+				}
+			} catch (DebugException e) {
+				Activator.log(e);
+			}
+		}
+	}
 
-  @Override
-  public Object getAdapter(Class adapter) {
-    return null;
-  }
+	@Override
+	public void dispose() {
+		terminateAction = null;
+		terminateAllAction = null;
+		bars = null;
+		page = null;
+	}
 
-  @Override
-  public void activated() {
-    updateVis();
-  }
+	@Override
+	public Object getAdapter(Class adapter) {
+		return null;
+	}
 
-  @Override
-  public void deactivated() {
-    updateVis();
-  }
+	@Override
+	public void activated() {
+		updateVis();
+	}
 
-  private void updateVis() {
+	@Override
+	public void deactivated() {
+		updateVis();
+	}
 
-    if (page == null)
-      return;
-    boolean isEnabled = true;
-    stop.setEnabled(isEnabled);
-    bars.updateActionBars();
-  }
+	private void updateVis() {
+		if (page == null)
+			return;
+		terminateAction.setEnabled(true);
+		terminateAllAction.setEnabled(true);
+		bars.updateActionBars();
+	}
 
 }
