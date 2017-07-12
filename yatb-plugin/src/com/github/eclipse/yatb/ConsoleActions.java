@@ -66,7 +66,7 @@ public class ConsoleActions implements IConsolePageParticipant {
 	}
 
 	private Action createTerminateAllButton() {
-		ImageDescriptor imageDescriptor = ImageDescriptor.createFromFile(getClass(), "/icons/terminate_rem_co.gif");
+		ImageDescriptor imageDescriptor = ImageDescriptor.createFromFile(getClass(), "/icons/terminate_all.gif");
 		return new Action("Kill All Processes", imageDescriptor) {
 			@Override
 			public void run() {
