@@ -45,6 +45,7 @@ public class ConsoleActions implements IConsolePageParticipant {
 		IToolBarManager toolbarManager = bars.getToolBarManager();
 
 		toolbarManager.appendToGroup(IConsoleConstants.LAUNCH_GROUP, terminateAction);
+		toolbarManager.appendToGroup(IConsoleConstants.LAUNCH_GROUP, terminateAllAction);
 
 		bars.updateActionBars();
 	}
